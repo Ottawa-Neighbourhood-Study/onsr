@@ -19,3 +19,5 @@ Imports:
     magrittr
 Suggests: 
     testthat
+URL: https://github.com/Ottawa-Neighbourhood-Study/onsr
+BugReports: https://github.com/Ottawa-Neighbourhood-Study/onsr/issues

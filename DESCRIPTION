@@ -1,16 +1,21 @@
 Package: onsr
-Title: What the Package Does (One Line, Title Case)
+Title: Ottawa Neighbourhood Study (ONS) Common Functions
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Christopher",
+           family = "Belanger",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
+           email = "christopher.a.belanger@gmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+Description: This package collects common functions used in ONS' data-science work.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports: 
+    sf,
+    dplyr,
+    magrittr
+Suggests: 
+    testthat

@@ -35,13 +35,42 @@ This is a basic example which shows you how to solve a common problem:
 ```{r example}
 # Load the ONS Gen 2 shapefile and plot it.
 library(onsr)
-library(ggplot2)
-library(magrittr)
+library(tidyverse)
 
 ons_shp <- get_ons_shp()
 
 ons_shp %>%
-  ggplot2::ggplot() +
-    ggplot2::geom_sf()
+  ggplot() +
+    geom_sf()
 ```
+
+And we can also easily locate point data within the ONS neighbourhoods:
+
+```{r, warning=FALSE,message=FALSE}
+library(sf)
+library(leaflet)
+
+bike_thefts <- sf::read_sf("https://opendata.arcgis.com/datasets/3620cc7a3b874557bb288d889a4d56c2_0.geojson")
+
+bike_thefts_pts <- get_pts_neighbourhood(pts = bike_thefts,
+                                          pgon = ons_shp)
+
+
+bike_thefts_nbhd <- bike_thefts_pts %>%
+  group_by(ONS_ID, Name, Name_FR) %>%
+  summarise(total_thefts= n()) %>%
+  sf::st_set_geometry(NULL) %>%
+  right_join(ons_shp) %>%
+  mutate(total_thefts = if_else(is.na(total_thefts), 0, total_thefts)) %>%
+  sf::st_as_sf()
+
+bike_thefts_nbhd %>%
+  ggplot() +
+  geom_sf(aes(fill = total_thefts)) +
+  scale_fill_gradient(trans="log",
+                      breaks = c(1,10,100, 1000)) +
+  labs(fill = "Thefts",
+       title = "Total Reported Bicycle Thefts in ONS Neighbourhoods, 2014-2020")
+```
+
 

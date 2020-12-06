@@ -4,7 +4,7 @@
 \alias{get_pts_neighbourhood}
 \title{Locate points within ONS neighbourhoods.}
 \usage{
-get_pts_neighbourhood(pts, pgon = ons_shp)
+get_pts_neighbourhood(pts, pgon = onsr::ons_shp)
 }
 \arguments{
 \item{pts}{A simple feature collection class sf containing point data that you would like to locate within polygons (by default, ONS neighbourhoods).}

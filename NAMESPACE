@@ -3,4 +3,6 @@
 export("%>%")
 export(get_ons_shp)
 export(get_pts_neighbourhood)
+export(gmap_geocode)
+export(gmap_geocode_one)
 importFrom(magrittr,"%>%")

@@ -17,7 +17,11 @@ Imports:
     sf,
     dplyr,
     magrittr,
-    httr
+    httr,
+    jsonlite,
+    purrr,
+    tidyr,
+    rlang
 Suggests: 
     testthat
 URL: https://github.com/Ottawa-Neighbourhood-Study/onsr

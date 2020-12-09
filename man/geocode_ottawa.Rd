@@ -7,7 +7,8 @@
 geocode_ottawa(data, var, verbose = FALSE, wait_nicely = TRUE)
 }
 \arguments{
-\item{data}{A dataframe containing a column with addresses stored as characters.}
+\item{data}{A dataframe containing a column with addresses stored as
+characters.}
 
 \item{var}{A column with addresses stored as characters.}
 
@@ -16,8 +17,15 @@ geocode_ottawa(data, var, verbose = FALSE, wait_nicely = TRUE)
 \item{wait_nicely}{Boolean flag controlling API rate. Defaults to TRUE.}
 }
 \value{
-The original dataframe with geocoded latitude and longitude in new columns lat and lng. Addresses that are invalid or not found return NA.
+The original dataframe with geocoded latitude and longitude in new
+columns lat and lng. Addresses that are invalid or not found return NA.
 }
 \description{
-Tidy Geocoding with the City of Ottawa's API
+Geocode a column of addresses using the City of Ottawa's
+geocoding service. No API key is needed, and the service uses ESRI's
+technology under the hood. Consult
+\href{https://open.ottawa.ca/pages/developer-resources}{the City of
+Ottawa's developer resources} or
+\href{https://developers.arcgis.com/rest/services-reference/geocode-addresses.htm}{ESRI's
+API documentation} for more information.
 }

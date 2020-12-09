@@ -149,7 +149,11 @@ geocode_ottawa <- function(data, var, verbose = FALSE, wait_nicely = TRUE) {
   # TODO: do batching for >1000 addresses.
 
   # get the addresses in a one-column tibble
+<<<<<<< HEAD
   addresses <- data %>% dplyr::select (address = {{var}})
+=======
+  addresses <- data %>% dplyr::select ({{var}})
+>>>>>>> 52f1aec328a85fc57995d2ef2f8d0bcba0e7642f
 
   # ESRI doesn't like prefixed apartment numbers or units, so we remove them
   # we also remove anything after a comma: we only want the street name

@@ -4,7 +4,7 @@
 \alias{geocode_ottawa}
 \title{Tidy Geocoding with the City of Ottawa's API}
 \usage{
-geocode_ottawa(data, var, verbose = FALSE, wait_nicely = TRUE)
+geocode_ottawa(data, var, batch_size = 9999, verbose = FALSE, polite_pause = 1)
 }
 \arguments{
 \item{data}{A dataframe containing a column with addresses stored as
@@ -12,9 +12,12 @@ characters.}
 
 \item{var}{A column with addresses stored as characters.}
 
+\item{batch_size}{Number of records to process in a batch. Defaults to 9999.}
+
 \item{verbose}{Boolean flag controlling console updates. Defaults to FALSE.}
 
-\item{wait_nicely}{Boolean flag controlling API rate. Defaults to TRUE.}
+\item{polite_pause}{Number of seconds to pause between batches, if
+applicable. Defaults to 1.}
 }
 \value{
 The original dataframe with geocoded latitude and longitude in new
@@ -28,4 +31,7 @@ technology under the hood. Consult
 Ottawa's developer resources} or
 \href{https://developers.arcgis.com/rest/services-reference/geocode-addresses.htm}{ESRI's
 API documentation} for more information.
+
+If you're getting timeouts or other server errors with big requests (more
+than 500 or 1000 records), try adjusting the batch size down.
 }

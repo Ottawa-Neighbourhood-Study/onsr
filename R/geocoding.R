@@ -149,18 +149,17 @@ geocode_ottawa <- function(data, var, verbose = FALSE, wait_nicely = TRUE) {
   # TODO: do batching for >1000 addresses.
 
   # get the addresses in a one-column tibble
-<<<<<<< HEAD
   addresses <- data %>% dplyr::select (address = {{var}})
-=======
-  addresses <- data %>% dplyr::select ({{var}})
->>>>>>> 52f1aec328a85fc57995d2ef2f8d0bcba0e7642f
 
   # ESRI doesn't like prefixed apartment numbers or units, so we remove them
   # we also remove anything after a comma: we only want the street name
   # we're only searching within Ottawa
   addresses <- addresses %>%
-    dplyr::mutate(address = base::gsub(x = address, pattern = "^\\d*\\w*-", replacement = ""),
-                  address = base::gsub(x = address, pattern = ",.*", replacement = ""))
+    dplyr::mutate(address = base::gsub(x = address, pattern = "^\\d*\\w*\\s*-", replacement = ""), # trim apartment style "123-881 Street St."
+                  address = base::gsub(x = address, pattern = ",.*", replacement = ""), # trim anything after a comma like "123 Street, Ottawa"
+                  address = base::sub(x = address, pattern = "^\\d+\\s+(?=\\d)", replacement = "", perl=TRUE), # apartment style "123 881 Street St."
+                  address = base::sub(x = address, pattern = "-*\\s*\\d*\\s*$", replacement = "", perl = TRUE), # apartment style "123 Street st - 10"
+                  address = base::sub(x = address, pattern = "(Apt|apt|Unit|unit|#)\\.*\\d*\\s*$", replacement= "", perl = TRUE)) # apartment style "123 Street st Apt 123"
 
   # create json in the right format for the api
   # we create a temp column so we can nest, then we remove it

@@ -21,7 +21,10 @@ Imports:
     jsonlite,
     purrr,
     tidyr,
-    rlang
+    rlang,
+    stringr,
+    readr,
+    tidyselect
 Suggests: 
     testthat
 URL: https://github.com/Ottawa-Neighbourhood-Study/onsr

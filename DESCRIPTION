@@ -24,7 +24,9 @@ Imports:
     rlang,
     stringr,
     readr,
-    tidyselect
+    tidyselect,
+    googlesheets4,
+    janitor
 Suggests: 
     testthat
 URL: https://github.com/Ottawa-Neighbourhood-Study/onsr

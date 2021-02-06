@@ -27,3 +27,21 @@ get_pts_neighbourhood <- function(pts, pgon = onsr::ons_shp){
 
   return (results)
 }
+
+
+
+#' Single-Link Indicator from Dissemination Blocks (DBs) to ONS Neighbourhoods
+#'
+#' @description Census data is often available at the DB level, whereas ONS
+#'   analyses generally take place at the neighbourhood level. This function
+#'   returns an SLI that maps each DB in Ottawa to the single ONS neighbourhood
+#'   it overlaps the most. The SLI was generated with a simple spatial join from
+#'   StatsCan's official DB shapefile and the ONS neighbourhood boundaries,
+#'   using the function sf::st_join(largest = TRUE).
+#'
+#' @return A tibble matching each Ottawa DB to one ONS neighbourhood.
+#' @export
+get_db_to_ons <- function() {
+  db_to_ons_data %>%
+    tibble::as_tibble()
+}

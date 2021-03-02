@@ -16,4 +16,7 @@ returns an SLI that maps each DB in Ottawa to the single ONS neighbourhood
 it overlaps the most. The SLI was generated with a simple spatial join from
 StatsCan's official DB shapefile and the ONS neighbourhood boundaries,
 using the function sf::st_join(largest = TRUE).
+
+See also \code{onsr::get_da_to_ons()}, which maps dissemination areas to ONS
+neighbourhoods.
 }

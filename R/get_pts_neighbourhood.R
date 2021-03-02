@@ -39,9 +39,32 @@ get_pts_neighbourhood <- function(pts, pgon = onsr::ons_shp){
 #'   StatsCan's official DB shapefile and the ONS neighbourhood boundaries,
 #'   using the function sf::st_join(largest = TRUE).
 #'
+#'   See also `onsr::get_da_to_ons()`, which maps dissemination areas to ONS
+#'   neighbourhoods.
+#'
 #' @return A tibble matching each Ottawa DB to one ONS neighbourhood.
 #' @export
 get_db_to_ons <- function() {
   db_to_ons_data %>%
+    tibble::as_tibble()
+}
+
+
+#' Single-Link Indicator from Dissemination Areas (DAs) to ONS Neighbourhoods
+#'
+#' @description Census data is often available at the DA level, whereas ONS
+#'   analyses generally take place at the neighbourhood level. This function
+#'   returns an SLI that maps each DA in Ottawa to the single ONS neighbourhood
+#'   it overlaps the most. The SLI was generated with a simple spatial join from
+#'   StatsCan's official DA shapefile and the ONS neighbourhood boundaries,
+#'   using the function sf::st_join(largest = TRUE).
+#'
+#'   See also `onsr::get_db_to_ons()`, which maps dissemination blocks to ONS
+#'   neighbourhoods.
+#'
+#' @return A tibble matching each Ottawa DA to one ONS neighbourhood.
+#' @export
+get_da_to_ons <- function() {
+  da_to_ons_data %>%
     tibble::as_tibble()
 }

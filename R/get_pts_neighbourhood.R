@@ -45,7 +45,7 @@ get_pts_neighbourhood <- function(pts, pgon = onsr::ons_shp){
 #' @return A tibble matching each Ottawa DB to one ONS neighbourhood.
 #' @export
 get_db_to_ons <- function() {
-  db_to_ons_data %>%
+  onsr::db_to_ons_data %>%
     tibble::as_tibble()
 }
 
@@ -65,6 +65,6 @@ get_db_to_ons <- function() {
 #' @return A tibble matching each Ottawa DA to one ONS neighbourhood.
 #' @export
 get_da_to_ons <- function() {
-  da_to_ons_data %>%
+  onsr::da_to_ons_data %>%
     tibble::as_tibble()
 }

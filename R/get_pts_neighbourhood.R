@@ -68,3 +68,38 @@ get_da_to_ons <- function() {
   onsr::da_to_ons_data %>%
     tibble::as_tibble()
 }
+
+
+
+
+#' Add Back Missing Neighbourhoods after `onsr::get_pts_neighbourhood()`
+#'
+#' @param data A tibble containing counts of points in neighbourhoods, with fewer than 111 rows. In other words, some neighbourhoods are missing.
+#' @param var  The column containing the count data.
+#' @param na_to_zero Boolean: Should NA values be converted to 0?
+#'
+#' @return A 111-row tibble
+#' @export
+add_back_nbhds <- function(data, var, na_to_zero = TRUE){
+  # basic input validation
+  if(! var %in% colnames(data)) stop ("Missing var: please specify column name of missing values.")
+
+  # get the full list of ons ids, add a placeholder column
+  onsr::ons_ids %>%
+    dplyr::mutate (.placeholder = NA)
+
+  # do the full join to add back the missing ONS_IDs
+  result <- data %>%
+    full_join(ons_ids, by = "ONS_ID") %>%
+    select(-.placeholder)
+
+  # if we want to, change NA to 0 for the neighbourhoods that were missing
+  if (na_to_zero) {
+    result <- result %>%
+      rename(.temp = {{var}}) %>%
+      mutate( .temp = if_else(is.na(.temp), 0, as.numeric(.temp))) %>%
+      rename({{var}} := .temp)
+  }
+
+  return (result)
+}

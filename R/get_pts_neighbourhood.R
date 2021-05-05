@@ -85,7 +85,8 @@ add_back_nbhds <- function(data, var, na_to_zero = TRUE){
   if(! var %in% colnames(data)) stop ("Missing var: please specify column name of missing values.")
 
   # get the full list of ons ids, add a placeholder column
-  onsr::ons_ids %>%
+  ons_ids <- onsr::ons_ids %>%
+    tibble::as_tibble() %>%
     dplyr::mutate (.placeholder = NA)
 
   # do the full join to add back the missing ONS_IDs

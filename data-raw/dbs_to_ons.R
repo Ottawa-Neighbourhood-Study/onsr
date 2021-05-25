@@ -8101,5 +8101,10 @@ db_to_ons_data <- dplyr::tribble(
 "35061308021", 940,
 )
 
+# fix a few obvious mistakes, e.g. putting Vanier North DBs in cemeteries
+db_to_ons_data <- dplyr::mutate(db_to_ons_data,
+                                ONS_ID = dplyr::if_else(DBUID %in% c("35060209001"),
+                                                 953,
+                                                 ONS_ID))
 
 usethis::use_data(db_to_ons_data, overwrite = TRUE)

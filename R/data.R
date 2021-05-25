@@ -31,5 +31,24 @@
 #' @source \url{https://www.neighbourhoodstudy.ca/}
 "ons_ids"
 
+#' Dissemination Block (DB) Populations, Ottawa, 2016 Census
+#'
+#' A dataset containing DB-level populations for all 8,016 DBs in Ottawa.
+#'
+#' Data is derived from the Statistics Canada 2016 Census Geographic Attribute
+#' File, accessible here:
+#'
+#' * [https://open.canada.ca/data/en/dataset/32f1a777-9fcf-4e4a-8c66-82c66a2e76f1](https://open.canada.ca/data/en/dataset/32f1a777-9fcf-4e4a-8c66-82c66a2e76f1)
+#'
+#'
+#' @format A tibble with two columns:
+#' \describe{
+#'   \item{DBUID}{Unique dissemination block identifier}
+#'   \item{db_pop_2016}{DB population from 2016 census.}
+#'   ...
+#' }
+#' @source \url{https://open.canada.ca/data/en/dataset/32f1a777-9fcf-4e4a-8c66-82c66a2e76f1}
+"ottawa_db_pops_2016"
+
 
 Name <- Name_FR<-  ONS_ID <- NULL

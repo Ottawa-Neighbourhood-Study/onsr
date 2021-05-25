@@ -204,12 +204,19 @@ census_get_data <- function(dguids = NA, topic = 0, notes = 0, stat = 0, lang = 
 #'
 #' https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm
 #'
-#' @param data A vector or one-column dataframe of DA or DB identifiers.
-#' @param type The type of census area: accepts "DA" or "DB".
+#' @param data A vector or one-column dataframe of census Geographic Unique
+#' Identifiers (GEOUIDs).
+#' @param type The type of GEOUID:
+#' * CSDUID
+#' * DAUID
+#' * DBUID
 #'
 #' @return
 #' @export
 census_make_dguid <- function(data, type = "DA") {
+
+  # consider making this an input variable
+  vintage_year <- 2016
 
   # if it's a list or dataframe
   if (typeof(data) == "list"){
@@ -223,14 +230,19 @@ census_make_dguid <- function(data, type = "DA") {
     data <- as.character(data)#tibble::tibble(input = as.character(data))
   }
 
-  if (type == "DA") {
-    if (any(nchar(data) != 8)) stop ("Invalid input. Dissemination area identifiers must all be of length 8.")
-    prefix <- "2016S0512"
+  if (type == "CSDUID") {
+    if (any(nchar(data) != 7)) stop ("Invalid input. Census subdivision area identifiers must all be of length 7.")
+    prefix <- paste0(vintage_year,"A0005")
   }
 
-  if (type == "DB") {
+  if (type == "DAUID") {
+    if (any(nchar(data) != 8)) stop ("Invalid input. Dissemination area identifiers must all be of length 8.")
+    prefix <- paste0(vintage_year,"S0512")
+  }
+
+  if (type == "DBUID") {
     if (any(nchar(data) != 11)) stop ("Invalid input. Dissemination block identifiers must all be of length 11.")
-    prefix <- "2016S0513"
+    prefix <- paste0(vintage_year,"S0513")
   }
 
 

@@ -7,9 +7,15 @@
 census_make_dguid(data, type = "DA")
 }
 \arguments{
-\item{data}{A vector or one-column dataframe of DA or DB identifiers.}
+\item{data}{A vector or one-column dataframe of census Geographic Unique
+Identifiers (GEOUIDs).}
 
-\item{type}{The type of census area: accepts "DA" or "DB".}
+\item{type}{The type of GEOUID:
+\itemize{
+\item CSDUID
+\item DAUID
+\item DBUID
+}}
 }
 \value{
 

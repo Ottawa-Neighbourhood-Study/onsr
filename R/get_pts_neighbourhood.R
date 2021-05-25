@@ -72,14 +72,32 @@ get_da_to_ons <- function() {
 
 
 
-#' Add Back Missing Neighbourhoods after `onsr::get_pts_neighbourhood()`
+#' Add Back Missing Neighbourhoods to a Long Tibble
 #'
-#' @param data A tibble containing counts of points in neighbourhoods, with fewer than 111 rows. In other words, some neighbourhoods are missing.
+#' @description This function takes a long tibble with a column for ONS IDs and
+#'   a column for count data and adds rows for any missing ONS IDs. This is
+#'   useful after you do a spatial join, e.g. using `onsr::get_pts_neighbourhood()`,
+#'   and then do a count with `dplyr::summarise()`, since any neighbourhoods not
+#'   represented in the input data won't get a row in the output.
+#'
+#'
+#' @param data A tibble containing counts of points in neighbourhoods, with
+#'   fewer than 111 rows. In other words, some neighbourhoods are missing.
 #' @param var  The column containing the count data.
 #' @param na_to_zero Boolean: Should NA values be converted to 0?
 #'
 #' @return A 111-row tibble
 #' @export
+#' @examples
+#' \dontrun{
+#' # example using fictitious data
+#' ons_shp <- onsr::get_ons_shp()
+#' neighbourhood_counts <- onsr::get_pts_neighbourhood(pts = point_data, pgon = ons_shp) %>%
+#'   sf::st_set_geometry(NULL) %>%
+#'   dplyr::group_by(ONS_ID) %>%
+#'   dplyr::summarise(num = n()) %>%
+#'   onsr::add_back_nbhds(var = "num")
+#' }
 add_back_nbhds <- function(data, var, na_to_zero = TRUE){
   # basic input validation
   if(! var %in% colnames(data)) stop ("Missing var: please specify column name of missing values.")

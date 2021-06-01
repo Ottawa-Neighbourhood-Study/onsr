@@ -71,5 +71,27 @@ ons_pop_weight_dbs <- function(od_table, n_closest = 5, verbose = TRUE){
     dplyr::arrange(ONS_ID) %>%
     tidyr::drop_na()
 
+
+  # repeat the process for Ottawa as a whole by assigning every
+  # DB to ONS_ID 0. (might be a more elegant way but it works)
+  if (verbose) message ("Creating Ottawa-wide values...")
+  ottawa_level <- db_pops %>%
+    dplyr::left_join(closest_shortest, by = "DBUID") %>%
+    dplyr::mutate(weighted_dist = avg_dist * db_pop_2016,
+                  weighted_time = avg_time * db_pop_2016) %>%
+    dplyr::mutate(ONS_ID = 0) %>%
+    dplyr::group_by(ONS_ID) %>%
+    dplyr::mutate(ons_pop = sum(db_pop_2016, na.rm = TRUE)) %>%
+    dplyr::arrange(ONS_ID) %>%
+    dplyr::summarise(weighted_dist_ons = sum(weighted_dist, na.rm = TRUE)/ons_pop,
+                     weighted_time_ons = sum(weighted_time, na.rm = TRUE)/ons_pop,
+                     .groups = "drop") %>%
+    dplyr::distinct() %>%
+    dplyr::arrange(ONS_ID) %>%
+    tidyr::drop_na()
+
+  # put it together
+  ons_table <- dplyr::bind_rows(ottawa_level,ons_table)
+
   return (ons_table)
 }

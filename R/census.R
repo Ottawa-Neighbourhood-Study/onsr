@@ -149,8 +149,11 @@ census_get_geographies <- function(geos = "DA", cpt = 35, lang = "E"){
 #' @return
 #' @examples
 #' \dontrun{
-#' onsr::census
-#'
+#' # get mobility data for Ottawa, Census Division 3506
+#' onsr::census_make_dguid(data = "3506",
+#'                        geouid_type = "CDUID",
+#'                        vintage_year = 2016) %>%
+#' onsr:::census_get_data_one(topic = 12)
 #' }
 #' @export
 census_get_data_one <- function(dguid = NA, topic = 0, notes = 0, stat = 0, lang = "E"){
@@ -198,10 +201,20 @@ census_get_data_one <- function(dguid = NA, topic = 0, notes = 0, stat = 0, lang
 #' @inheritParams census_get_data_one
 #'
 #' @return
+#' @examples
+#' \dontrun{
+#' # get mobility data for Ottawa and Leeds & Grenville, Census Divisions 3506 &
+#' 3507.
+#' onsr::census_make_dguid(data = c("3506", "3507"),
+#'                        geouid_type = "CDUID",
+#'                        vintage_year = 2016) %>%
+#' onsr:::census_get_data(topic = 12)
+#' }
 #' @export
 census_get_data <- function(dguids = NA, topic = 0, notes = 0, stat = 0, lang = "E"){
 
-  # so much data validation
+  # no data validation, not very tidy, works for now but fix this up
+  dguids <- unlist(dguids)
 
   purrr::map_df(dguids, census_get_data_one, topic = topic, notes = notes, stat = stat, lang = lang)
 

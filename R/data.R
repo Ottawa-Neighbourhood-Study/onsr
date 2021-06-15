@@ -51,4 +51,37 @@
 "ottawa_db_pops_2016"
 
 
-Name <- Name_FR<-  ONS_ID <- NULL
+
+#' Statistics Canada Census GEOID Types
+#'
+#' A dataset with descriptions of the different kinds of geographic unique
+#' identifiers (GEOUIDs) Statistics Canada (StatsCan) uses and accepts in its
+#' API calls.
+#'
+#' StatsCan defines a number of GEOUID types that correspond to different
+#' geographical units (e.g. provinces, census subdivisions, metropolitan areas).
+#' This table shows all GEOUID types that StatsCan's API accepts, and shows how
+#' to use a specific identifier (e.g. a dissemination block ID) and turn it into
+#' an API-readable GEOUID.
+#'
+#' This table is pulled directly from StatsCan, and you can consult StatsCan's
+#' website for more details here:
+#'
+#' * [https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm](https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm)
+#'
+#'
+#' @format A tibble with seven columns:
+#' \describe{
+#'   \item{name}{Human-readable name of the GEOUID type.}
+#'   \item{abbr}{Vintage geographic reference year abbreviation: either CENSUS, FED, or HRBR.}
+#'   \item{type}{A = administrative, S = statistical.}
+#'   \item{schema}{A four-digit number that identifies this type of GEOUID.}
+#'   \item{geouid}{The type of GEOUID. This is often a column name in StatsCan shapefiles.}
+#'   \item{example_name}{Human-readable name of an example geography of this type.}
+#'   \item{example_geouid}{API-readable unique GEOUID of the human-readable example geography name.}
+#'   ...
+#' }
+#' @source \url{https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm}
+"census_geo_types"
+
+Name <- Name_FR<-  ONS_ID <- census_geo_types <- NULL

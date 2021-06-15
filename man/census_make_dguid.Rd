@@ -2,24 +2,30 @@
 % Please edit documentation in R/census.R
 \name{census_make_dguid}
 \alias{census_make_dguid}
-\title{Create DGUIDs for Dissemination Areas or Blocks}
+\title{Create DGUIDs for StatsCan Census Regions}
 \usage{
-census_make_dguid(data, type = "DA")
+census_make_dguid(data, geouid_type = NA, vintage_year = 2016)
 }
 \arguments{
 \item{data}{A vector or one-column dataframe of census Geographic Unique
 Identifiers (GEOUIDs).}
 
-\item{type}{The type of GEOUID:
-\itemize{
-\item CSDUID
-\item DAUID
-\item DBUID
-}}
+\item{vintage_year}{The year for the data you're interested in. Different
+GEOUID types have different options. The default is 2016, the most recent
+census year available.}
+
+\item{type}{The type of GEOUID. Consult the dataframe
+\code{onsr::census_geo_types} to see the valid options.}
 }
 \value{
 
 }
 \description{
+This function takes a set of census region geographic unique identifiers
+(GEOUIDs) and returns their corresponding geographic identifiers (DGUIDs).
+These DGUIDs are useful because you can use them to query StatsCan's APIs to
+retrieve census data.
+}
+\details{
 https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm
 }

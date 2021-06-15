@@ -41,13 +41,19 @@ Census geographies Web Data Service (WDS) and returns some or all Census
 Profile data for a geography of interest. Data is returned for individual
 regions specified by Dissemination Geography Unique Identifiers (or DGUIDs),
 which can correspond to census regions like dissemination areas, political
-regions like provinces and territories, or economic regions. so if you want data
-for more than one region you'll need to make one function call for each.
+regions like provinces and territories, or economic regions.
 
-TODO: turn this into a tidy function that accepts vector or tibble input.
+\strong{NOTE:} This function is under active development, and it is my intention
+to turn it into a properly "tidy" function.
 
 For more details on the underlying API, please see StatsCan's documentation here:
 \itemize{
 \item \url{https://www12.statcan.gc.ca/wds-sdw/cpr2016-eng.cfm}
+}
+}
+\examples{
+\dontrun{
+onsr::census
+
 }
 }

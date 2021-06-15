@@ -2,11 +2,14 @@
 % Please edit documentation in R/census.R
 \name{census_get_data}
 \alias{census_get_data}
-\title{Get census data for one or more DGUIDs}
+\title{Get StatsCan Census Data for Specified Regions}
 \usage{
 census_get_data(dguids = NA, topic = 0, notes = 0, stat = 0, lang = "E")
 }
 \arguments{
+\item{dguids}{A character vector or one-column dataframe containing the
+DGUIDs to query. \emph{Note: in a future version this will be made "tidier."}}
+
 \item{topic}{Which subset of census data should be returned? The following values are accepted;
 \itemize{
 \item 0 = All topics (default)
@@ -34,5 +37,22 @@ census_get_data(dguids = NA, topic = 0, notes = 0, stat = 0, lang = "E")
 
 }
 \description{
-Should write more stuff here
+This function provides an interface to Statistics Canada's 2016
+Census geographies Web Data Service (WDS) and returns some or all Census
+Profile data for a geography of interest. Data is returned for individual
+regions specified by Dissemination Geography Unique Identifiers (or DGUIDs),
+which can correspond to census regions like dissemination areas, political
+regions like provinces and territories, or economic regions.
+
+\strong{NOTE:} This function is under active development, and it is my intention
+to turn it into a properly "tidy" function.
+
+For more details on the underlying API, please see StatsCan's documentation here:
+\itemize{
+\item \url{https://www12.statcan.gc.ca/wds-sdw/cpr2016-eng.cfm}
+}
+}
+\details{
+\emph{Note: This function is under active development. Please send suggestions or
+bug reports to christopher.a.belanger (at) gmail.com.}
 }

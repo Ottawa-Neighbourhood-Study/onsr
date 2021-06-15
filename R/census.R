@@ -112,10 +112,10 @@ census_get_geographies <- function(geos = "DA", cpt = 35, lang = "E"){
 #'   Profile data for a geography of interest. Data is returned for individual
 #'   regions specified by Dissemination Geography Unique Identifiers (or DGUIDs),
 #'   which can correspond to census regions like dissemination areas, political
-#'   regions like provinces and territories, or economic regions. so if you want data
-#'   for more than one region you'll need to make one function call for each.
+#'   regions like provinces and territories, or economic regions.
 #'
-#'   TODO: turn this into a tidy function that accepts vector or tibble input.
+#'   **NOTE:** This function is under active development, and it is my intention
+#'   to turn it into a properly "tidy" function.
 #'
 #'   For more details on the underlying API, please see StatsCan's documentation here:
 #'
@@ -145,11 +145,14 @@ census_get_geographies <- function(geos = "DA", cpt = 35, lang = "E"){
 #'
 #' @param stat What statistic should be returned? 0 = counts (default), 1 = rates.
 #'
-
 #'
 #' @return
-#' @export
+#' @examples
+#' \dontrun{
+#' onsr::census
 #'
+#' }
+#' @export
 census_get_data_one <- function(dguid = NA, topic = 0, notes = 0, stat = 0, lang = "E"){
 
   # for dguid, just check that one was supplied. checking dguid validity is complicated,
@@ -183,10 +186,15 @@ census_get_data_one <- function(dguid = NA, topic = 0, notes = 0, stat = 0, lang
 
 }
 
-#' Get census data for one or more DGUIDs
+#' Get StatsCan Census Data for Specified Regions
 #'
-#' Should write more stuff here
+#' @inherit census_get_data_one description
 #'
+#' @details *Note: This function is under active development. Please send suggestions or
+#' bug reports to christopher.a.belanger (at) gmail.com.*
+#'
+#' @param dguids A character vector or one-column dataframe containing the
+#' DGUIDs to query. *Note: in a future version this will be made "tidier."*
 #' @inheritParams census_get_data_one
 #'
 #' @return
@@ -200,25 +208,35 @@ census_get_data <- function(dguids = NA, topic = 0, notes = 0, stat = 0, lang = 
 }
 
 
-#' Create DGUIDs for Dissemination Areas or Blocks
+#' Create DGUIDs for StatsCan Census Regions
+#'
+#' This function takes a set of census region geographic unique identifiers
+#' (GEOUIDs) and returns their corresponding geographic identifiers (DGUIDs).
+#' These DGUIDs are useful because you can use them to query StatsCan's APIs to
+#'  retrieve census data.
 #'
 #' https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm
 #'
 #' @param data A vector or one-column dataframe of census Geographic Unique
 #' Identifiers (GEOUIDs).
-#' @param type The type of GEOUID:
-#' * CSDUID
-#' * DAUID
-#' * DBUID
+#' @param type The type of GEOUID. Consult the dataframe
+#'  `onsr::census_geo_types` to see the valid options.
+#' @param vintage_year The year for the data you're interested in. Different
+#' GEOUID types have different options. The default is 2016, the most recent
+#' census year available.
 #'
 #' @return
 #' @export
-census_make_dguid <- function(data, type = "DA") {
+census_make_dguid <- function(data, geouid_type = NA, vintage_year = 2016) {
 
-  # consider making this an input variable
-  vintage_year <- 2016
+  # validate type input
+  if (is.na(geouid_type)) stop ("Please specify the type of GEOUID you are providing. See `census_geouid_types` for options.")
+  if (!geouid_type %in% onsr::census_geo_types$geouid) stop ("Please supply a valid GEOUID type. Consult onsr::census_geo_types for options. ")
 
-  # if it's a list or dataframe
+  # we're only checkign that it's a number, not that statscan has any results
+  if (!is.numeric(vintage_year)) stop ("Please supply a numeric value for vintage_year.")
+
+  # make sure it's a list or dataframe
   if (typeof(data) == "list"){
     if (!"data.frame" %in% class(data)) stop ("Invalid input. Please supply a vector or one-column dataframe.")
     data <- pull(data, 1)#dplyr::rename(data, input = 1)
@@ -230,20 +248,30 @@ census_make_dguid <- function(data, type = "DA") {
     data <- as.character(data)#tibble::tibble(input = as.character(data))
   }
 
-  if (type == "CSDUID") {
-    if (any(nchar(data) != 7)) stop ("Invalid input. Census subdivision area identifiers must all be of length 7.")
-    prefix <- paste0(vintage_year,"A0005")
-  }
 
-  if (type == "DAUID") {
-    if (any(nchar(data) != 8)) stop ("Invalid input. Dissemination area identifiers must all be of length 8.")
-    prefix <- paste0(vintage_year,"S0512")
-  }
 
-  if (type == "DBUID") {
-    if (any(nchar(data) != 11)) stop ("Invalid input. Dissemination block identifiers must all be of length 11.")
-    prefix <- paste0(vintage_year,"S0513")
-  }
+  # get the prefix
+  geouid_specs <- dplyr::filter(onsr::census_geo_types,
+                                geouid == geouid_type)
+
+  prefix <- paste0(vintage_year, geouid_specs$type, geouid_specs$schema)
+
+
+
+  # if (type == "CSDUID") {
+  #   if (any(nchar(data) != 7)) stop ("Invalid input. Census subdivision area identifiers must all be of length 7.")
+  #   prefix <- paste0(vintage_year,"A0005")
+  # }
+  #
+  # if (type == "DAUID") {
+  #   if (any(nchar(data) != 8)) stop ("Invalid input. Dissemination area identifiers must all be of length 8.")
+  #   prefix <- paste0(vintage_year,"S0512")
+  # }
+  #
+  # if (type == "DBUID") {
+  #   if (any(nchar(data) != 11)) stop ("Invalid input. Dissemination block identifiers must all be of length 11.")
+  #   prefix <- paste0(vintage_year,"S0513")
+  # }
 
 
     tibble::tibble(dguid = paste0(prefix, data))

@@ -53,7 +53,10 @@ For more details on the underlying API, please see StatsCan's documentation here
 }
 \examples{
 \dontrun{
-onsr::census
-
+# get mobility data for Ottawa, Census Division 3506
+onsr::census_make_dguid(data = "3506",
+                       geouid_type = "CDUID",
+                       vintage_year = 2016) \%>\%
+onsr:::census_get_data_one(topic = 12)
 }
 }

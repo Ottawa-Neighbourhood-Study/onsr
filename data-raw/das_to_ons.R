@@ -1395,4 +1395,12 @@ da_to_ons_data <- dplyr::tribble(
   )
 
 
+# fix a few obvious mistakes, e.g. putting Vanier North DAs in cemeteries
+da_to_ons_data <- dplyr::mutate(da_to_ons_data,
+                                ONS_ID = dplyr::case_when(
+                                    DAUID %in% c("35060209") ~ 953,
+                                    TRUE ~ ONS_ID)
+)
+
+
 usethis::use_data(da_to_ons_data, overwrite = TRUE)

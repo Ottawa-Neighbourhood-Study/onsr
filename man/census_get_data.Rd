@@ -56,3 +56,13 @@ For more details on the underlying API, please see StatsCan's documentation here
 \emph{Note: This function is under active development. Please send suggestions or
 bug reports to christopher.a.belanger (at) gmail.com.}
 }
+\examples{
+\dontrun{
+# get mobility data for Ottawa and Leeds & Grenville, Census Divisions 3506 &
+3507.
+onsr::census_make_dguid(data = c("3506", "3507"),
+                       geouid_type = "CDUID",
+                       vintage_year = 2016) \%>\%
+onsr:::census_get_data(topic = 12)
+}
+}

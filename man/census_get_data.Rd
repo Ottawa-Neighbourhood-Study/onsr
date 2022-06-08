@@ -32,9 +32,11 @@ DGUIDs to query. \emph{Note: in a future version this will be made "tidier."}}
 \item{notes}{Should footnotes be returned? 0 = no (default), 1 = yes.}
 
 \item{stat}{What statistic should be returned? 0 = counts (default), 1 = rates.}
+
+\item{lang}{Language "EN" or "FR" (FIXME confirm!)}
 }
 \value{
-
+data
 }
 \description{
 This function provides an interface to Statistics Canada's 2016

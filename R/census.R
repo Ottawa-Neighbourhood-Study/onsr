@@ -145,8 +145,10 @@ census_get_geographies <- function(geos = "DA", cpt = 35, lang = "E"){
 #'
 #' @param stat What statistic should be returned? 0 = counts (default), 1 = rates.
 #'
+#' @param lang Language "EN" or "FR" (FIXME confirm!)
 #'
-#' @return
+#'
+#' @return data
 #' @examples
 #' \dontrun{
 #' # get mobility data for Ottawa, Census Division 3506
@@ -200,7 +202,9 @@ census_get_data_one <- function(dguid = NA, topic = 0, notes = 0, stat = 0, lang
 #' DGUIDs to query. *Note: in a future version this will be made "tidier."*
 #' @inheritParams census_get_data_one
 #'
-#' @return
+#' @param lang Language "EN" or "FR" (FIXME confirm!)
+#'
+#' @return data
 #' @examples
 #' \dontrun{
 #' # get mobility data for Ottawa and Leeds & Grenville, Census Divisions 3506 &
@@ -238,9 +242,12 @@ census_get_data <- function(dguids = NA, topic = 0, notes = 0, stat = 0, lang = 
 #' GEOUID types have different options. The default is 2016, the most recent
 #' census year available.
 #'
-#' @return
+#' @return Data
 #' @export
 census_make_dguid <- function(data, geouid_type = NA, vintage_year = 2016) {
+
+  # for clean R CMD CHECK with dplyr data masking
+  geouid <- NULL
 
   # validate type input
   if (is.na(geouid_type)) stop ("Please specify the type of GEOUID you are providing. See `census_geouid_types` for options.")
@@ -252,7 +259,7 @@ census_make_dguid <- function(data, geouid_type = NA, vintage_year = 2016) {
   # make sure it's a list or dataframe
   if (typeof(data) == "list"){
     if (!"data.frame" %in% class(data)) stop ("Invalid input. Please supply a vector or one-column dataframe.")
-    data <- pull(data, 1)#dplyr::rename(data, input = 1)
+    data <- dplyr::pull(data, 1)#dplyr::rename(data, input = 1)
   }
 
   # if it's an atomic vector

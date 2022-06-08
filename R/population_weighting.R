@@ -18,6 +18,11 @@
 #' for each ONS neighbourhood.
 #' @export
 ons_pop_weight_dbs <- function(od_table, n_closest = 5, verbose = TRUE){
+
+  # for clean R CMD CHECK with dplyr data masking
+  DBUID  <- distance <- time <- avg_dist <- db_pop_2016 <- avg_time <- weighted_dist <- ons_pop <- weighted_time <- NULL
+
+
   # basic input validation
   if (!"DBUID" %in% colnames(od_table)) stop ("Input data does not have a column named `DBUID`. This function is designed to work with DB-level data.")
   if (!"distance" %in% colnames(od_table) | (!"time" %in% colnames(od_table))) stop ("Input data does not have a column named `distance` or `time`. This function is designed to work with output from valhalr::od_table().")
@@ -43,7 +48,7 @@ ons_pop_weight_dbs <- function(od_table, n_closest = 5, verbose = TRUE){
     dplyr::mutate(DBUID = as.character(DBUID))
 
   # create table with each db', adnd's avg dist and avg time to 5 closest
-  closest_shortest <- left_join(closest, shortest, by = "DBUID")
+  closest_shortest <- dplyr::left_join(closest, shortest, by = "DBUID")
 
   # get single-link indicator (SLI) that maps each DB to one and only one nbhd
   db_sli <- onsr::get_db_to_ons()
@@ -94,4 +99,84 @@ ons_pop_weight_dbs <- function(od_table, n_closest = 5, verbose = TRUE){
   ons_table <- dplyr::bind_rows(ottawa_level,ons_table)
 
   return (ons_table)
+}
+
+
+
+
+#' Get percentage of residents within a certain travel time of facilities
+#'
+#' This function takes a long origin-destination (OD) table between dissemination
+#' blocks (DBs) and facilities and computes, for each ONS neighbourhood and
+#' Ottawa as a whole, the percent of residents within a given travel distance of
+#' those amenities.
+#'
+#' OD tables can be generated using the Valhalla routing system and the R
+#' package valhallr.
+#'
+#' @param walk_table A tbl_df with at minimum the columns `DBUID` and `time`,
+#'        giving travel time in seconds.
+#' @param minute_threshold Threshold in minutes. Defaults to 15.
+#'
+#' @return A tbl_df with columns `ONS_ID` and `pct_covered`
+#' @export
+#'
+#' @examples
+get_pct_within_traveltime <- function(walk_table, minute_threshold = 15) {
+
+  # for clean R CMD CHECK using dplyr
+  DBUID <- time <- covered <- db_pop_2016 <- covered_pop <- total_pop <- pct_covered <- NULL
+
+  if (!is.numeric(minute_threshold)) stop ("Please provide a numeric value for `minute_threshold`.")
+
+
+  # group by DBUID, arrange in increasing order of time, get the top one (shortest),
+  # then see if the shortest is under the threshold # of seconds
+  pct_walking <- walk_table %>%
+    tidyr::drop_na() %>%
+    dplyr::group_by(DBUID) %>%
+    dplyr::arrange(time) %>%
+    dplyr::slice_head(n=1) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(covered = dplyr::if_else(time < minute_threshold * 60, TRUE, FALSE)) %>%
+    #filter(DBUID == 35060560005)
+    dplyr::select(DBUID, covered) %>%
+
+    dplyr::left_join(onsr::ottawa_db_pops_2016, by = "DBUID") %>%
+    dplyr::mutate(DBUID = as.character(DBUID)) %>%
+    dplyr::left_join(onsr::db_to_ons_data, by = "DBUID") %>%
+    dplyr::mutate(covered_pop = covered * db_pop_2016) %>%
+    #filter(ONS_ID == 48)
+    dplyr::group_by(ONS_ID) %>%
+    dplyr::summarise(total_pop = sum(db_pop_2016),
+                     covered_pop = sum(covered_pop),
+                     pct_covered = covered_pop/total_pop) %>%
+    tidyr::drop_na() %>%
+    dplyr::select(ONS_ID, pct_covered)
+
+  # do it also just for ottawa overall, like it's one big neighbourhood
+  ott_pct_walking <- walk_table %>%
+    tidyr::drop_na() %>%
+    dplyr::group_by(DBUID) %>%
+    dplyr::arrange(time) %>%
+    dplyr::slice_head(n=1) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(covered = dplyr::if_else(time < minute_threshold * 60, 1, 0)) %>%
+    dplyr::select(DBUID, covered) %>%
+    dplyr::left_join(onsr::ottawa_db_pops_2016, by = "DBUID") %>%
+    # mutate(DBUID = as.character(DBUID)) %>%
+    # left_join(onsr::get_db_to_ons(), by = "DBUID") %>%
+    dplyr::mutate(ONS_ID = 0) %>%
+    dplyr::mutate(covered_pop = covered * db_pop_2016) %>%
+    dplyr::group_by(ONS_ID) %>%
+    dplyr::summarise(total_pop = sum(db_pop_2016),
+                     covered_pop = sum(covered_pop),
+                     pct_covered = covered_pop/total_pop) %>%
+    tidyr::drop_na() %>%
+    dplyr::select(ONS_ID, pct_covered)
+
+  # put the neighbourhood-level and ottawa-wide values together
+  pct_walking <- dplyr::bind_rows(ott_pct_walking, pct_walking)
+
+  return (pct_walking)
 }

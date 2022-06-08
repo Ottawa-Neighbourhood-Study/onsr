@@ -87,6 +87,7 @@ get_da_to_ons <- function() {
 #' @param na_to_zero Boolean: Should NA values be converted to 0?
 #'
 #' @return A 111-row tibble
+#' @importFrom rlang :=
 #' @export
 #' @examples
 #' \dontrun{
@@ -99,6 +100,8 @@ get_da_to_ons <- function() {
 #'   onsr::add_back_nbhds(var = "num")
 #' }
 add_back_nbhds <- function(data, var, na_to_zero = TRUE){
+  .temp <- .placeholder <-
+
   # basic input validation
   if(! var %in% colnames(data)) stop ("Missing var: please specify column name of missing values.")
 
@@ -109,15 +112,15 @@ add_back_nbhds <- function(data, var, na_to_zero = TRUE){
 
   # do the full join to add back the missing ONS_IDs
   result <- data %>%
-    full_join(ons_ids, by = "ONS_ID") %>%
-    select(-.placeholder)
+    dplyr::full_join(ons_ids, by = "ONS_ID") %>%
+    dplyr::select(-.placeholder)
 
   # if we want to, change NA to 0 for the neighbourhoods that were missing
   if (na_to_zero) {
     result <- result %>%
-      rename(.temp = {{var}}) %>%
-      mutate( .temp = if_else(is.na(.temp), 0, as.numeric(.temp))) %>%
-      rename({{var}} := .temp)
+      dplyr::rename(.temp = {{var}}) %>%
+      dplyr::mutate( .temp = dplyr::if_else(is.na(.temp), 0, as.numeric(.temp))) %>%
+      dplyr::rename({{var}} := .temp)
   }
 
   return (result)

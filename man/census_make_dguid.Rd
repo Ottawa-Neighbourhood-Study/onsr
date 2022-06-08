@@ -18,7 +18,7 @@ census year available.}
 \code{onsr::census_geo_types} to see the valid options.}
 }
 \value{
-
+Data
 }
 \description{
 This function takes a set of census region geographic unique identifiers

@@ -84,4 +84,25 @@
 #' @source \url{https://www150.statcan.gc.ca/n1/pub/92f0138m/92f0138m2019001-eng.htm}
 "census_geo_types"
 
+
+#' Linking StatsCan Dissemination Areas to ONS Neighbourhoods
+#'
+#' @format A tibble with two columns:
+#' \describe{
+#'   \item{DAUID}{Each dissemination area's unique identifier.}
+#'   \item{ONS_ID}{A numeric ID corresponding to an ONS neighbourhood.}
+#'   ...
+#' }
+"da_to_ons_data"
+
+#' Linking StatsCan Dissemination Blocks to ONS Neighbourhoods
+#'
+#' @format A tibble with two columns:
+#' \describe{
+#'   \item{DBUID}{Each dissemination block's unique identifier.}
+#'   \item{ONS_ID}{A numeric ID corresponding to an ONS neighbourhood.}
+#'   ...
+#' }
+"db_to_ons_data"
+
 Name <- Name_FR<-  ONS_ID <- census_geo_types <- NULL

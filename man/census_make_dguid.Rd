@@ -10,15 +10,15 @@ census_make_dguid(data, geouid_type = NA, vintage_year = 2016)
 \item{data}{A vector or one-column dataframe of census Geographic Unique
 Identifiers (GEOUIDs).}
 
+\item{geouid_type}{The type of GEOUID. Consult the dataframe
+\code{onsr::census_geo_types} to see the valid options.}
+
 \item{vintage_year}{The year for the data you're interested in. Different
 GEOUID types have different options. The default is 2016, the most recent
 census year available.}
-
-\item{type}{The type of GEOUID. Consult the dataframe
-\code{onsr::census_geo_types} to see the valid options.}
 }
 \value{
-
+Data
 }
 \description{
 This function takes a set of census region geographic unique identifiers

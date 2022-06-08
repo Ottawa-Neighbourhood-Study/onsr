@@ -34,6 +34,10 @@ get_ons_shp <- function(all_details = FALSE) {
 #' @examples
 #' \dontrun{ons_data <- get_ons_data()}
 get_ons_data <- function(tidy = TRUE){
+
+  # for clean R CMD CHECK with dplyr and data masking
+  id <- category1 <- polygon_attribute <- value <- NULL
+
   # set so it doesn't ask for auth
   googlesheets4::gs4_deauth()
 
@@ -68,7 +72,7 @@ get_ons_data <- function(tidy = TRUE){
     dplyr::mutate(dplyr::across(where(is.list),
                   function(x) paste0(x, " "))) %>%
     dplyr::mutate(dplyr::across(where(is.list), unlist)) %>%
-    dplyr::mutate(dplyr::across(everything(), stringr::str_trim))
+    dplyr::mutate(dplyr::across(dplyr::everything(), stringr::str_trim))
 
   # put the labels together with the data, to make it easier to search
   all_data <- data_labels %>%
@@ -77,11 +81,11 @@ get_ons_data <- function(tidy = TRUE){
   # if the tidy flag is set, pivot longer so we return a long tibble. otherwise we'll return a wide one.
   if (tidy) {
     all_data <- all_data %>%
-      tidyr::pivot_longer(cols = starts_with("onsid_"),
+      tidyr::pivot_longer(cols = dplyr::starts_with("onsid_"),
                    names_prefix = "onsid_",
                    values_to = "value",
                    names_to = "ONS_ID") %>%
-      dplyr::select(polygon_attribute, ONS_ID, value, everything())
+      dplyr::select(polygon_attribute, ONS_ID, value, dplyr::everything())
 
   }
 

@@ -361,11 +361,18 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
     dplyr::select(ONS_ID, Name, dplyr::everything())
 
 
+  # add prefix to column names if applicable
+  if (name_prefix != ""){
+    if (verbose) message ("Renaming columns with prefix")
+    new_data <- new_data %>%
+      dplyr::rename_with(.cols = -dplyr::any_of(c("Name", "ONS_ID")), .fn = function(x) paste0(name_prefix, "_", x))
+  }
+
   # add postfix to column names if applicable
   if (name_postfix != ""){
     if (verbose) message ("Renaming columns with postfix")
-    new_data %>%
-      dplyr::rename_with(.cols = c(-ONS_ID, Name), paste0, "_", name_postfix)
+    new_data <- new_data %>%
+      dplyr::rename_with(.cols = -dplyr::any_of(c("Name", "ONS_ID")), paste0, "_", name_postfix)
   }
 
   return(new_data)

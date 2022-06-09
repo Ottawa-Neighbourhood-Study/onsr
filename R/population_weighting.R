@@ -178,3 +178,186 @@ get_pct_within_traveltime <- function(walk_table, minute_threshold = 15) {
 
   return (pct_walking)
 }
+
+
+
+#' Compute standard ONS statistics from a shapefile of points
+#'
+#' This function takes a shapefile of points that can represent any services--
+#' for example, physicians, WIFI stations, or schools-- and some standard ONS
+#' data inputs, and calculates five common ONS statistics:
+#'
+#'  * Points per Neighbourhood
+#'  * Points / 1000 residents in the neighbourhood plus a 50m buffer
+#'  * Average travel distance to 3 nearest points
+#'  * Average travel distance to 1 nearest point
+#'  * % of residents within a 15-minute walk of any point
+#'
+#' It needs as input a path to a long origin-destination (OD) table such as
+#' can be generated using the Valhalla routing enging and `valhallr::od_table()`.
+#'
+#' @param point_shapefile A shapefile of points representing service locations.
+#' @param name_prefix Optional - a prefix to be applied to column names.
+#' @param name_postfix Optional - a postfix (?) to be applied to column names.
+#' @param ons_shp Optional. An ONS shapefile. If not specified, uses internal data `onsr::ons_shp`.
+#' @param ons_data ONS data. Can be acquired using `onsr::get_ons_data()`.
+#' @param path_to_od_table File path to an OD table.
+#' @param verbose Boolean, defaults TRUE. Would you like many updates?
+#'
+#' @return A tbl_df with the calculated statistics.
+#' @export
+compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix = "", ons_shp = NA,
+                               # ons_buffer_50m,
+                               ons_data, path_to_od_table, verbose = TRUE){
+
+  # for clean R CMD CHECK with dplyr data masking
+  n <- pct_covered <- points_per_1000_pop <- polygon_attribute <- pop2016 <- value <- weighted_dist_ons <- x <- NULL
+
+  if (is.na(ons_shp)){
+    if (verbose) message ("Getting ONS shapefile and adding row for all of Ottawa.")
+    ons_shp <- onsr::ons_shp %>%
+      sf::st_transform(crs = 32189)
+
+    ottawa_shp <- ons_shp %>%
+      sf::st_union() %>%
+      sf::st_as_sf() %>%
+      dplyr::mutate(ONS_ID = 0,
+             Name = "Ottawa",
+             Name_FR = "") %>%
+      dplyr::rename(geometry = x) %>%
+      sf::st_transform(crs = 32189)
+
+    ons_shp <- dplyr::bind_rows(ons_shp, ottawa_shp)
+
+  }
+
+  # if ons_shp is in WGS84, convert it
+  if (stringr::str_detect(paste0(unlist(sf::st_crs(ons_shp)), collapse = " "), "WGS")){
+    if (verbose) message ("Converting ons_shp to CRS NAD83/MTM zone 9 (32189)")
+    ons_shp <- sf::st_transform(ons_shp, crs = 32189)
+  }
+
+  # if ottawa itself isn't in the shapefile, add it
+
+
+  if (verbose) message("Calculating 50m buffer.")
+
+  ons_buffer_50m <- sf::st_buffer(ons_shp, 50)
+
+
+  if (verbose) message("Extracting ONS populations from data.")
+  # get neighbourhood 2016 populations from ONS data
+  nbhd_pop2016 <- ons_data %>%
+    dplyr::filter(polygon_attribute == "pop2016") %>%
+    dplyr::select(ONS_ID,
+                  pop2016 = value) %>%
+    dplyr::mutate(ONS_ID = as.numeric(ONS_ID))
+
+  # create bufferede version of ons_shp
+  ons_buffer_50m <- sf::st_buffer(ons_shp, 50)
+
+  # calculate some values!
+  # 1. Points per Neighbourhood
+  if (verbose) message("Metric 1. Points per Neighbourhood")
+
+  points_per_nhood <- onsr::get_pts_neighbourhood(pts = point_shapefile, pgon = ons_shp) %>%
+    sf::st_set_geometry(NULL) %>%
+    dplyr::group_by(ONS_ID) %>%
+    dplyr::count() %>%
+    #dplyr::summarise(num_fps = dplyr::n()) %>%
+    onsr::add_back_nbhds(var = "n") %>%
+    dplyr::arrange(ONS_ID) %>%
+    tidyr::drop_na() # exclude any docs outside of Ottawa
+
+  ##2. # Points / 1000 residents in the neighbourhood plus a 50m buffer
+  if (verbose) message("Metric 2. # Points / 1000 residents in the neighbourhood plus a 50m buffer")
+
+  points_per_nbhd_50m_buffer <-   {
+
+    # get # of points in each neighbourhood plus a 50m buffer
+    points_per_nbhd_50m_buffer <- onsr::get_pts_neighbourhood(pts = point_shapefile, pgon = ons_buffer_50m) %>%
+      sf::st_set_geometry(NULL) %>%
+      dplyr::group_by(ONS_ID) %>%
+      dplyr::count() %>%
+      #dplyr::summarise(num_fps = n()) %>%
+      onsr::add_back_nbhds(var = "n") %>%
+      dplyr::arrange(ONS_ID)
+
+    # create new data with comparison for inspection
+    points_with_buffer <- dplyr::left_join(points_per_nbhd_50m_buffer,
+                                           nbhd_pop2016,
+                                           by = "ONS_ID") %>%
+      dplyr::mutate(points_per_1000_pop = (n / pop2016) * 1000) %>%
+      dplyr::filter(!is.na(ONS_ID))
+
+    points_with_buffer %>%
+      dplyr::select(ONS_ID, points_per_1000_pop)
+
+  }
+
+
+  ## Metric 3: Average travel distance to 3 nearest points (measured from DBs and population-weighted up to the neighbourhood level)
+  if (verbose) message("Metric 3: Average travel distance to 3 nearest points")
+
+  avg_dist_3 <- {
+    # read the big OD table, do population weighting, then set values to NA for
+    # the two cemeteries and carleton.
+    readr::read_csv(path_to_od_table) %>%
+      #  dplyr::filter(cpso %in% ottawa_docs$cpso) %>%
+      onsr::ons_pop_weight_dbs(n_closest = 3) %>%
+      dplyr::mutate(weighted_dist_ons = dplyr::if_else(ONS_ID %in% c(5, 17, 71), NA_real_, weighted_dist_ons)) %>%
+      dplyr::select(ONS_ID, avg_dist_3 = weighted_dist_ons)
+
+  }
+
+  ## Metric 4: Average distance to 1 nearest point
+  # (measured from dissemination blocks (DBs) and population-weighted up neighbourhood level)
+
+  if (verbose)  message("Metric 4: Average travlel distance to 1 nearest point")
+  avg_dist_1 <- {
+    readr::read_csv(path_to_od_table) %>%
+      #  dplyr::filter(cpso %in% ottawa_docs$cpso) %>%
+      onsr::ons_pop_weight_dbs(n_closest = 1) %>%
+      dplyr::mutate(weighted_dist_ons = dplyr::if_else(ONS_ID %in% c(5, 17, 71), NA_real_, weighted_dist_ons)) %>%
+      dplyr::select(ONS_ID, avg_dist_1 = weighted_dist_ons)
+  }
+
+
+
+  ## Metric 5: % of residents within a 15-minute walk of any point
+  # NOTE! This one requires more calculation and data sources.
+  # We're also using data from the ISM study here: DB-to-doc OD table
+  # And statscan data: 2016 DB populations
+  # And ONS data: DB-to-neighbourhood single-link indicator
+  # need to filter so that we only include the docs in our input group by cpso
+
+  if (verbose)  message("Metric 5: % of residents within a 15-minute walk of any point")
+
+  pct_15min_walk <-  readr::read_csv(path_to_od_table) %>%
+    onsr::get_pct_within_traveltime(minute_threshold=15) %>%
+    dplyr::mutate(pct_covered= dplyr::if_else(ONS_ID %in% c(5, 17, 71), NA_real_, pct_covered)) %>%
+    dplyr::rename(pct_15min_walk = pct_covered)
+
+
+  if (verbose) message("Combining results")
+
+  new_data <- points_per_nhood %>%
+    dplyr::left_join(points_per_nbhd_50m_buffer, by = "ONS_ID") %>%
+    dplyr::left_join(avg_dist_1, by = "ONS_ID") %>%
+    dplyr::left_join(avg_dist_3, by = "ONS_ID") %>%
+    dplyr::left_join(pct_15min_walk, by = "ONS_ID") %>%
+    dplyr::left_join(sf::st_set_geometry(onsr::ons_shp, NULL) %>% dplyr::select(ONS_ID, Name), by = "ONS_ID") %>%
+    dplyr::mutate(Name = dplyr::if_else(ONS_ID == 0, "Ottawa", Name)) %>%
+    dplyr::select(ONS_ID, Name, dplyr::everything())
+
+
+  # add postfix to column names if applicable
+  if (name_postfix != ""){
+    if (verbose) message ("Renaming columns with postfix")
+    new_data %>%
+      dplyr::rename_with(.cols = c(-ONS_ID, Name), paste0, "_", name_postfix)
+  }
+
+  return(new_data)
+
+}

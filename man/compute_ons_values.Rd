@@ -49,3 +49,11 @@ data inputs, and calculates five common ONS statistics:
 It needs as input a path to a long origin-destination (OD) table such as
 can be generated using the Valhalla routing enging and \code{valhallr::od_table()}.
 }
+\examples{
+\dontrun{
+# file `wifi_walk_table.csv` computed previously using `valhallr::od_table()`
+ons_data <- onsr::get_ons_data()
+wifi_data <- onsr::compute_ons_values(point_shapefile = wifi_locations_nad, name_postfix = "wifi", ons_data = ons_data,
+                                      path_to_od_table =  "outputs/wifi_walk_table.csv")
+}
+}

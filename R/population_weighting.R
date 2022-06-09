@@ -206,12 +206,19 @@ get_pct_within_traveltime <- function(walk_table, minute_threshold = 15) {
 #'
 #' @return A tbl_df with the calculated statistics.
 #' @export
+#' @examples
+#' \dontrun{
+#' # file `wifi_walk_table.csv` computed previously using `valhallr::od_table()`
+#' ons_data <- onsr::get_ons_data()
+#' wifi_data <- onsr::compute_ons_values(point_shapefile = wifi_locations_nad, name_postfix = "wifi", ons_data = ons_data,
+#'                                       path_to_od_table =  "outputs/wifi_walk_table.csv")
+#' }
 compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix = "", ons_shp = NA,
                                # ons_buffer_50m,
                                ons_data, path_to_od_table, verbose = TRUE){
 
   # for clean R CMD CHECK with dplyr data masking
-  n <- pct_covered <- points_per_1000_pop <- polygon_attribute <- pop2016 <- value <- weighted_dist_ons <- x <- NULL
+  points_per_nbhd <- n <- pct_covered <- points_per_1000_pop <- polygon_attribute <- pop2016 <- value <- weighted_dist_ons <- x <- NULL
 
   if (is.na(ons_shp)){
     if (verbose) message ("Getting ONS shapefile and adding row for all of Ottawa.")
@@ -253,10 +260,12 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
                   pop2016 = value) %>%
     dplyr::mutate(ONS_ID = as.numeric(ONS_ID))
 
-  # create bufferede version of ons_shp
+  # create buffered version of ons_shp
   ons_buffer_50m <- sf::st_buffer(ons_shp, 50)
 
+
   # calculate some values!
+
   # 1. Points per Neighbourhood
   if (verbose) message("Metric 1. Points per Neighbourhood")
 
@@ -267,7 +276,8 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
     #dplyr::summarise(num_fps = dplyr::n()) %>%
     onsr::add_back_nbhds(var = "n") %>%
     dplyr::arrange(ONS_ID) %>%
-    tidyr::drop_na() # exclude any docs outside of Ottawa
+    tidyr::drop_na() %>%# exclude any docs outside of Ottawa
+    dplyr::rename(points_per_nbhd = n)
 
   ##2. # Points / 1000 residents in the neighbourhood plus a 50m buffer
   if (verbose) message("Metric 2. # Points / 1000 residents in the neighbourhood plus a 50m buffer")
@@ -287,11 +297,11 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
     points_with_buffer <- dplyr::left_join(points_per_nbhd_50m_buffer,
                                            nbhd_pop2016,
                                            by = "ONS_ID") %>%
-      dplyr::mutate(points_per_1000_pop = (n / pop2016) * 1000) %>%
+      dplyr::mutate(points_per_nbhd_50mbuffer_per_1000_pop = (n / pop2016) * 1000) %>%
       dplyr::filter(!is.na(ONS_ID))
 
     points_with_buffer %>%
-      dplyr::select(ONS_ID, points_per_1000_pop)
+      dplyr::select(ONS_ID, points_per_nbhd_50mbuffer_per_1000_pop)
 
   }
 
@@ -306,7 +316,7 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
       #  dplyr::filter(cpso %in% ottawa_docs$cpso) %>%
       onsr::ons_pop_weight_dbs(n_closest = 3) %>%
       dplyr::mutate(weighted_dist_ons = dplyr::if_else(ONS_ID %in% c(5, 17, 71), NA_real_, weighted_dist_ons)) %>%
-      dplyr::select(ONS_ID, avg_dist_3 = weighted_dist_ons)
+      dplyr::select(ONS_ID, avg_dist_km_3_closest = weighted_dist_ons)
 
   }
 
@@ -319,7 +329,7 @@ compute_ons_values <- function(point_shapefile, name_prefix = "", name_postfix =
       #  dplyr::filter(cpso %in% ottawa_docs$cpso) %>%
       onsr::ons_pop_weight_dbs(n_closest = 1) %>%
       dplyr::mutate(weighted_dist_ons = dplyr::if_else(ONS_ID %in% c(5, 17, 71), NA_real_, weighted_dist_ons)) %>%
-      dplyr::select(ONS_ID, avg_dist_1 = weighted_dist_ons)
+      dplyr::select(ONS_ID, avg_dist_km_1_closest = weighted_dist_ons)
   }
 
 
